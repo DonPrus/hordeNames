@@ -5,7 +5,8 @@ var mongoose = require('mongoose'),
     ProgressBar = require('progress'),
     UserSchema = require('./schema');
 
-var memorizer = function () {
+var memorizer = function (delta) {
+    var deltaUid = delta;
     async.waterfall(
         [
             function (callBack) {
@@ -16,37 +17,49 @@ var memorizer = function () {
                 });
             },
             function (result, callback) {
-                var startWithUid = result.uid + 1;
-                var deltaUid = 1000;
-                console.log('Start with: ' + startWithUid + '\nWill check ' + deltaUid + '\n');
+                var startedUid = result.uid + 1,
+                    endUid = startedUid + deltaUid,
+                    arr,
+                    temp = [];
+                for (var i = startedUid; i < endUid; i++) {
+                    temp.push(i);
+                }
+                arr = temp.join();
+                callback(null, arr);
+            },
+            function (result, callback) {
+                var successUsers = 0;
                 var bar = new ProgressBar(':bar', {
                     total: deltaUid
                 });
-                for (var uid = startWithUid, length = startWithUid + deltaUid, successUsers = 0; uid < length; uid++) {
-                    //TODO : user_ids = 1,2,3,4,5,6 ...;
-                    //TODO : http://vk.com/dev/execute;
-                    //TODO : add 8 workers;
-                    request('https://api.vk.com/method/users.get?user_ids=' + uid + '&fields=sex', function (error, response, body) {
+                //TODO : user_ids = 1,2,3,4,5,6 ...;
+                //TODO : http://vk.com/dev/execute;
+                //TODO : add 8 workers;
+                request('https://api.vk.com/method/users.get?user_ids=' + result + '&fields=sex', function (error, response, body) {
                         if (!error && response.statusCode == 200) {
-                            var item = JSON.parse(body).response[0];
-                            bar.tick();
-                            if (!item['sex']) {
-                                return;
-                            }
-                            var model = new UserSchema();
-                            model['uid'] = item['uid'];
-                            model['first_name'] = item['first_name'];
-                            model['last_name'] = item['last_name'];
-                            model['sex'] = item['sex'];
-                            model.save();
-                            successUsers++;
+                            var usersResponse = JSON.parse(body).response;
+                            console.log(usersResponse.length);
+                            for (var i = 0, usersLength = usersResponse.length; i < usersLength; i++) {
+                                var item = usersResponse[i];
+                                bar.tick();
+                                if (!item['sex']) {
+                                    continue;
+                                }
+                                var model = new UserSchema();
+                                model['uid'] = item['uid'];
+                                model['first_name'] = item['first_name'];
+                                model['last_name'] = item['last_name'];
+                                model['sex'] = item['sex'];
+                                model.save();
+                                successUsers++;
 
-                            if (bar.complete) {
-                                callback(null, successUsers);
+                                if (bar.complete) {
+                                    callback(null, successUsers);
+                                }
                             }
                         }
-                    });
-                }
+                    }
+                );
             }
         ], function (err, result) {
             if (err) {
