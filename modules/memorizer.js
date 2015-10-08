@@ -21,7 +21,7 @@ var memorizer = function (delta) {
                     endUid = startedUid + deltaUid,
                     arr,
                     temp = [];
-                console.log(startedUid);
+                console.log('Начинаем с : '+startedUid);
                 for (var i = startedUid; i < endUid; i++) {
                     temp.push(i);
                 }
@@ -42,7 +42,7 @@ var memorizer = function (delta) {
                             var saveList = [];
                             for (var i = 0, usersLength = usersResponse.length; i < usersLength; i++) {
                                 var item = usersResponse[i];
-                                bar.tick();
+                                bar.tick(1);
                                 if (!item['sex']) {
                                     continue;
                                 }
@@ -51,12 +51,11 @@ var memorizer = function (delta) {
                                 model['first_name'] = item['first_name'];
                                 model['last_name'] = item['last_name'];
                                 model['sex'] = item['sex'];
-                                //model.save();
                                 saveList.push(model);
                                 successUsers++;
 
                                 if (bar.complete) {
-                                    callback(null, successUsers,saveList);
+                                    callback(null, successUsers, saveList);
                                 }
                             }
                         }
@@ -67,7 +66,7 @@ var memorizer = function (delta) {
             if (err) {
                 console.log(err);
             }
-            UserSchema.create(list,function(r,c){
+            UserSchema.create(list, function (r, c) {
                 console.log('Total added uids: ' + result);
                 close();
             });
