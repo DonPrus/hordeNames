@@ -1,7 +1,7 @@
 {
   "name": "parse",
-  "version": "0.0.0",
-  "description": "ERROR: No README data found!",
+  "version": "0.2.0",
+  "description": "Flexible parser for vk names and sex!",
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -12,6 +12,7 @@
     "express": "~4.13.3",
     "async": "~1.4.2",
     "request": "~2.64.0",
-    "mongoose": "~4.1.10"
+    "mongoose": "~4.1.10",
+    "progress": "~1.1.8"
   }
 }
