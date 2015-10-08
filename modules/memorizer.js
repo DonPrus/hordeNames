@@ -21,6 +21,7 @@ var memorizer = function (delta) {
                     endUid = startedUid + deltaUid,
                     arr,
                     temp = [];
+                console.log(startedUid);
                 for (var i = startedUid; i < endUid; i++) {
                     temp.push(i);
                 }
@@ -38,7 +39,7 @@ var memorizer = function (delta) {
                 request('https://api.vk.com/method/users.get?user_ids=' + result + '&fields=sex', function (error, response, body) {
                         if (!error && response.statusCode == 200) {
                             var usersResponse = JSON.parse(body).response;
-                            console.log(usersResponse.length);
+                            var saveList = [];
                             for (var i = 0, usersLength = usersResponse.length; i < usersLength; i++) {
                                 var item = usersResponse[i];
                                 bar.tick();
@@ -50,23 +51,30 @@ var memorizer = function (delta) {
                                 model['first_name'] = item['first_name'];
                                 model['last_name'] = item['last_name'];
                                 model['sex'] = item['sex'];
-                                model.save();
+                                //model.save();
+                                saveList.push(model);
                                 successUsers++;
 
                                 if (bar.complete) {
-                                    callback(null, successUsers);
+                                    callback(null, successUsers,saveList);
                                 }
                             }
                         }
                     }
                 );
             }
-        ], function (err, result) {
+        ], function (err, result, list) {
             if (err) {
                 console.log(err);
             }
-            console.log('Total added uids: ' + result);
-            process.exit();
+            UserSchema.create(list,function(r,c){
+                console.log('Total added uids: ' + result);
+                close();
+            });
+            function close() {
+                process.exit();
+            }
+
         });
 };
 
